@@ -33,8 +33,43 @@ public class Juego {
             mostrarCartasJugadores();
             mostrarCartasCrupier();
             this.preguntarCartaJugadores();
+            this.cojerCartasCrupier();
+            this.verCartas();
 
         }
+    }
+
+
+    public void verCartas(){
+        crupier.mostrarCartas();
+        if (crupier.getPuntuacion() > 21){
+            System.out.println("Todos Ganasteis, el crupier se paso");
+            return;
+        }
+        for (Jugador jugador : jugadores){
+            if (jugador.getPuntuacion() > crupier.getPuntuacion() && jugador.getPuntuacion() < 21){
+                System.out.println("Jugador: " + jugador.getNombre() + "\n");
+                mostrarGanaste();
+            } else if(jugador.getPuntuacion() < crupier.getPuntuacion()){
+                System.out.println("Jugador " + jugador.getNombre() + "\n");
+                mostrarPerdiste();
+            }
+        }
+    }
+    public void cojerCartasCrupier(){
+        while (this.maximaPuntuacion() > crupier.getPuntuacion()){
+            crupier.addCarta(this.cartas.primeraCarta());
+        }
+    }
+
+    public int maximaPuntuacion(){
+        int maximaPuntuacion = 0;
+        for (Jugador jugador:jugadores){
+            if (jugador.getPuntuacion() > maximaPuntuacion && jugador.getPuntuacion() <= 21){
+                maximaPuntuacion = jugador.getPuntuacion();
+            }
+        }
+        return maximaPuntuacion;
     }
 
     public void initializeJugadores(){
@@ -75,26 +110,23 @@ public class Juego {
     private void preguntarCartaJugador(Jugador jugador) {
         System.out.println("\n\nJugador " + jugador.getNombre());
         jugador.mostrarCartas();
-        System.out.println("¿Quieres Carta o quieres mirar?(CARTA/mirar)\n");
+        System.out.println("¿Quieres Carta o quieres mirar?(CARTA/parar)\n");
         String respuesta = new Scanner(System.in).nextLine();
-        if (!respuesta.equalsIgnoreCase("mirar")) {
+        if (!respuesta.equalsIgnoreCase("parar")) {
             Carta siguienteCarta = cartas.primeraCarta();
             jugador.addCarta(siguienteCarta);
             jugador.mostrarCartas();
             if (jugador.getPuntuacion()>21){
                 mostrarPerdiste();
             } else preguntarCartaJugador(jugador);
-        } else {
-            this.mirarCartas(jugador);
         }
     }
 
-    public void mostrarPerdiste(){
+    public static void mostrarPerdiste(){
         System.out.println("PERDISTE :(");
     }
 
     private void mirarCartas(Jugador jugador){
-        mostrarCartasCrupierJugador(jugador);
         if (jugador.getPuntuacion() > crupier.getPuntuacion() && crupier.getPuntuacion()>16 && crupier.getPuntuacion()<21){
             mostrarGanaste();
         } else if (crupier.getPuntuacion()>21){
@@ -107,12 +139,6 @@ public class Juego {
             crupier.addCarta(cartas.primeraCarta());
             this.mirarCartas(jugador);
         }
-    }
-
-    private void mostrarCartasCrupierJugador(Jugador jugador) {
-        System.out.println(
-                "Tus cartas suman " + jugador.getPuntuacion() +
-                "\nLas cartas del crupier suman " + crupier.getPuntuacion());
     }
 
     private static void mostrarGanaste() {

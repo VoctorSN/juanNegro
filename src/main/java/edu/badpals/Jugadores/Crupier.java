@@ -15,6 +15,13 @@ public class Crupier {
         return puntuacion;
     }
 
+    public void mostrarCartas(){
+        String out = "Las cartas del crupier son: ";
+        for (Carta carta : this.getCartas()){
+            out += carta + " ";
+        }
+        System.out.println(out);
+    }
     public ArrayList<Carta> getCartas() {
         return cartas;
     }
