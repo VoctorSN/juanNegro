@@ -16,7 +16,7 @@ public class Carta {
     }
 
     public void initializer(){
-        numeroPuntuacion.put("A",1);
+        numeroPuntuacion.put("A",11);
         numeroPuntuacion.put("2",2);
         numeroPuntuacion.put("3",3);
         numeroPuntuacion.put("4",4);
@@ -34,6 +34,10 @@ public class Carta {
     public Integer getPuntuacionByNombre(String nombre) {
         String numero = nombre.substring(0, nombre.length() - 1);
         return numeroPuntuacion.get(numero);
+    }
+
+    public boolean hasAs(){
+        return nombre.contains("A");
     }
 
     public Integer getPuntuacion () {

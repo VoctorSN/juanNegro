@@ -27,16 +27,20 @@ public class Juego {
             if (new Scanner(System.in).nextLine().equalsIgnoreCase("n"))
                 break;
             this.initializeJugadores();
-            getCartas().barajar();
-            this.repartir();
-            this.repartir();
-            mostrarCartasJugadores();
-            mostrarCartasCrupier();
-            this.preguntarCartaJugadores();
-            this.cojerCartasCrupier();
-            this.verCartas();
+            jugarRonda();
 
         }
+    }
+
+    private void jugarRonda() {
+        getCartas().barajar();
+        this.repartir();
+        this.repartir();
+        mostrarCartasJugadores();
+        mostrarCartasCrupier();
+        this.preguntarCartaJugadores();
+        this.cojerCartasCrupier();
+        this.verCartas();
     }
 
 
@@ -110,6 +114,7 @@ public class Juego {
     private void preguntarCartaJugador(Jugador jugador) {
         System.out.println("\n\nJugador " + jugador.getNombre());
         jugador.mostrarCartas();
+        jugador.mostrarPuntuacion();
         System.out.println("¿Quieres Carta o quieres mirar?(CARTA/parar)\n");
         String respuesta = new Scanner(System.in).nextLine();
         if (!respuesta.equalsIgnoreCase("parar")) {
@@ -118,6 +123,7 @@ public class Juego {
             jugador.mostrarCartas();
             if (jugador.getPuntuacion()>21){
                 mostrarPerdiste();
+                jugador.setVivo(false);
             } else preguntarCartaJugador(jugador);
         }
     }
@@ -157,7 +163,7 @@ public class Juego {
 
 
     public void mostrarCartasCrupier(){
-        System.out.println("Carta Crupier: " + crupier.getCarta());
+        System.out.println("Carta Crupier: " + crupier.getCarta() + "¿?");
     }
 
 

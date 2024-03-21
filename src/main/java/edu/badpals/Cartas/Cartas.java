@@ -29,6 +29,8 @@ public class Cartas {
         return primeraCarta;
     }
 
+
+
     @Override
     public String toString() {
         String out = "";
