@@ -12,10 +12,11 @@ public class Jugador {
 
     public Jugador(String nombre) {
         this.nombre = nombre;
+        this.capitalizarNombre();
     }
 
     public void mostrarPuntuacion(){
-        System.out.println(getPuntuacion());
+        System.out.println("Tu puntuacion es: " + getPuntuacion());
     }
 
     public ArrayList<Carta> getCartas() {
@@ -30,8 +31,18 @@ public class Jugador {
         this.dinero -= cantidad;
     }
 
+    public void capitalizarNombre(){
+        String nombre = getNombre();
+        if (nombre == null || nombre.isEmpty()) {
+            setNombre(nombre);
+        }else{
+            setNombre(nombre.substring(0, 1).toUpperCase() + nombre.substring(1));
+        }
+
+    }
+
     public void mostrarCartas(){
-        String out = "Las cartas de " + this.getNombre() + " son :";
+        String out = "Jugador " + this.getNombre() + " tus cartas son: ";
         for (Carta carta : this.getCartas()){
             out += carta + " ";
         }

@@ -31,7 +31,7 @@ public class Crupier {
     }
 
     public void mostrarCartas(){
-        String out = "Las cartas del crupier son: ";
+        String out = "\nLas cartas del crupier son: ";
         for (Carta carta : this.getCartas()){
             out += carta + " ";
         }

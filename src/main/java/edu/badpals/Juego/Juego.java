@@ -7,6 +7,7 @@ import edu.badpals.Jugadores.Jugador;
 
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 public class Juego {
     private Cartas cartas;
@@ -21,15 +22,37 @@ public class Juego {
     }
 
     public void jugar(){
-        while (true){
+        boolean isJugando = true;
+        while (isJugando){
+            isJugando = quiereJugar();
+            esperarSegundosYLimpiar(1);
             this.initialize();
-            System.out.println("\n¿Quieres Jugar?(S/n)\n");
-            if (new Scanner(System.in).nextLine().equalsIgnoreCase("n"))
-                break;
             this.initializeJugadores();
+            esperarSegundosYLimpiar(5);
             jugarRonda();
 
         }
+    }
+
+    private static void esperarSegundosYLimpiar(int segundos){
+        try {
+            TimeUnit.SECONDS.sleep(segundos);
+            limpiarPantalla();
+        } catch (InterruptedException e){
+            System.out.println("Algo ha ocurrido con el metodo sleep");
+        }
+    }
+
+    private static boolean quiereJugar() {
+        System.out.println("\n¿Quieres Jugar?(S/n)");
+        if (new Scanner(System.in).nextLine().equalsIgnoreCase("n"))
+            return false;
+        return true;
+    }
+
+    private static void limpiarPantalla(){
+        System.out.println("\033[H\033[2J");
+        System.out.flush();
     }
 
     private void jugarRonda() {
@@ -46,34 +69,44 @@ public class Juego {
 
     public void verCartas(){
         crupier.mostrarCartas();
+        System.out.println();
         if (crupier.getPuntuacion() > 21){
-            System.out.println("Todos Ganasteis, el crupier se paso");
-            return;
+            for (Jugador jugador : jugadores){
+                System.out.println("Jugador: " + jugador);
+                if (jugador.isVivo()){
+                    mostrarGanaste();
+                } else {
+                    mostrarPerdiste();
+                }
+                System.out.println();
+            }
+        } else {
+            for (Jugador jugador : jugadores){
+                System.out.println("Jugador: " + jugador);
+                if (jugador.getPuntuacion()>crupier.getPuntuacion()){
+                    mostrarPerdiste();
+                }
+                else {
+                    mostrarGanaste();
+                }
+                System.out.println();
+            }
         }
+        /*
         for (Jugador jugador : jugadores){
-            if (jugador.getPuntuacion() > crupier.getPuntuacion() && jugador.getPuntuacion() < 21){
-                System.out.println("Jugador: " + jugador.getNombre() + "\n");
+            if (jugador.getPuntuacion() > crupier.getPuntuacion() && jugador.isVivo()){
+                System.out.println( + jugador.getNombre() + "\n");
                 mostrarGanaste();
             } else if(jugador.getPuntuacion() < crupier.getPuntuacion()){
                 System.out.println("Jugador " + jugador.getNombre() + "\n");
                 mostrarPerdiste();
             }
-        }
+        } */
     }
     public void cojerCartasCrupier(){
-        while (this.maximaPuntuacion() > crupier.getPuntuacion()){
+        while (crupier.getPuntuacion() < 17){
             crupier.addCarta(this.cartas.primeraCarta());
         }
-    }
-
-    public int maximaPuntuacion(){
-        int maximaPuntuacion = 0;
-        for (Jugador jugador:jugadores){
-            if (jugador.getPuntuacion() > maximaPuntuacion && jugador.getPuntuacion() <= 21){
-                maximaPuntuacion = jugador.getPuntuacion();
-            }
-        }
-        return maximaPuntuacion;
     }
 
     public void initializeJugadores(){
@@ -106,21 +139,26 @@ public class Juego {
 
     public void preguntarCartaJugadores() {
         for (Jugador jugador : jugadores) {
-            preguntarCartaJugador(jugador);
+            preguntarCartaJugadorInformar(jugador);
 
         }
     }
 
-    private void preguntarCartaJugador(Jugador jugador) {
-        System.out.println("\n\nJugador " + jugador.getNombre());
+    private void preguntarCartaJugadorInformar(Jugador jugador) {
+        System.out.println();
         jugador.mostrarCartas();
         jugador.mostrarPuntuacion();
-        System.out.println("¿Quieres Carta o quieres mirar?(CARTA/parar)\n");
+        preguntarCartaJugador(jugador);
+    }
+
+    private void preguntarCartaJugador(Jugador jugador) {
+        System.out.println("¿Quieres Carta o quieres parar?(CARTA/parar)\n");
         String respuesta = new Scanner(System.in).nextLine();
         if (!respuesta.equalsIgnoreCase("parar")) {
             Carta siguienteCarta = cartas.primeraCarta();
             jugador.addCarta(siguienteCarta);
             jugador.mostrarCartas();
+            jugador.mostrarPuntuacion();
             if (jugador.getPuntuacion()>21){
                 mostrarPerdiste();
                 jugador.setVivo(false);
@@ -132,21 +170,6 @@ public class Juego {
         System.out.println("PERDISTE :(");
     }
 
-    private void mirarCartas(Jugador jugador){
-        if (jugador.getPuntuacion() > crupier.getPuntuacion() && crupier.getPuntuacion()>16 && crupier.getPuntuacion()<21){
-            mostrarGanaste();
-        } else if (crupier.getPuntuacion()>21){
-            this.mostrarGanaste();
-            System.out.println("El crupier se paso");
-        } else if (crupier.getPuntuacion() > jugador.getPuntuacion()) {
-            mostrarPerdiste();
-            System.out.println("El crupier te gano");
-        } else {
-            crupier.addCarta(cartas.primeraCarta());
-            this.mirarCartas(jugador);
-        }
-    }
-
     private static void mostrarGanaste() {
         System.out.println("¡GANASTE!");
     }
@@ -156,6 +179,7 @@ public class Juego {
     }
 
     public void mostrarCartasJugadores(){
+        System.out.println();
         for (Jugador jugador : jugadores){
             jugador.mostrarCartas();
         }
@@ -163,7 +187,7 @@ public class Juego {
 
 
     public void mostrarCartasCrupier(){
-        System.out.println("Carta Crupier: " + crupier.getCarta() + "¿?");
+        System.out.println("Carta Crupier: " + crupier.getCarta() + " ¿?");
     }
 
 
