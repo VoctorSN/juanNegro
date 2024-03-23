@@ -10,28 +10,53 @@ import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 public class Juego {
-    private Cartas cartas;
-    private Crupier crupier;
-    private ArrayList<Jugador> jugadores;
+    private Cartas cartas = new Cartas();
+    private final Crupier crupier = new Crupier();
+    private ArrayList<Jugador> jugadores = new ArrayList<>();
     private int cantidadJugadores = 0;
 
-    private void initialize(){
-        this.jugadores = new ArrayList<>();
-        cartas = new Cartas();
-        crupier = new Crupier();
-    }
+
 
     public void jugar(){
         boolean isJugando = true;
-        while (isJugando){
-            isJugando = quiereJugar();
+        limpiarPantalla();
+        if (quiereJugar()){
             esperarSegundosYLimpiar(1);
-            this.initialize();
             this.initializeJugadores();
-            esperarSegundosYLimpiar(5);
-            jugarRonda();
-
         }
+        while (isJugando){
+            if (!stillJugadores()){
+                System.out.println("No quedan jugadores, gana la banca");
+                break;
+            }
+            esperarSegundosYLimpiar(2);
+            jugarRonda();
+            if (!stillJugadores()){
+                System.out.println("No quedan jugadores, gana la banca");
+                break;
+            }
+            isJugando = quiereJugar();
+        }
+    }
+
+    public void preguntarRendicion(){
+        ArrayList<Jugador> jugadoresDesertores = new ArrayList<>();
+        for (Jugador jugador : jugadores){
+            System.out.println("Jugador " + jugador.getNombre() + " ¿quieres abandonar? (s/N)");
+            if (new Scanner(System.in).nextLine().equalsIgnoreCase("S")){
+                jugadoresDesertores.add(jugador);
+            }
+            System.out.println();
+        }
+        jugadoresDesertores.forEach(this::eliminarJugador);
+    }
+
+    private boolean stillJugadores() {
+        return !this.jugadores.isEmpty();
+    }
+
+    public void initializeCartas(){
+         this.cartas = new Cartas();
     }
 
     private static void esperarSegundosYLimpiar(int segundos){
@@ -45,64 +70,159 @@ public class Juego {
 
     private static boolean quiereJugar() {
         System.out.println("\n¿Quieres Jugar?(S/n)");
-        if (new Scanner(System.in).nextLine().equalsIgnoreCase("n"))
-            return false;
-        return true;
+        return !new Scanner(System.in).nextLine().equalsIgnoreCase("n");
     }
 
     private static void limpiarPantalla(){
-        System.out.println("\033[H\033[2J");
-        System.out.flush();
+        System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" +
+                "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" +
+                "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" +
+                "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" +
+                "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" +
+                "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" +
+                "\n\n\n\n\n\n\n\n\n\n");
     }
 
     private void jugarRonda() {
-        getCartas().barajar();
+        this.preguntarRendicion();
+        this.initializeCartas();
+        this.getCartas().barajar();
+        this.eliminarCartasJugadores();
         this.repartir();
         this.repartir();
-        mostrarCartasJugadores();
-        mostrarCartasCrupier();
+        this.mostrarCartasMesa();
+        this.preguntarApuestaJugadores();
         this.preguntarCartaJugadores();
         this.cojerCartasCrupier();
         this.verCartas();
+        this.eliminarJugadores();
+    }
+
+    public void eliminarCartasJugadores(){
+        for (Jugador jugador : jugadores){
+            jugador.eliminarCartas();
+        }
+    }
+
+    public void eliminarJugadores(){
+        ArrayList<Jugador> jugadoresEliminados = new ArrayList<>();
+        for (Jugador jugador : jugadores){
+            if (jugador.getDinero() < 1){
+                jugadoresEliminados.add(jugador);
+            }
+        }
+        jugadoresEliminados.forEach(this::eliminarJugador);
+    }
+    private void mostrarCartasMesa() {
+        mostrarCartasYDineroJugadores();
+        mostrarCartasCrupier();
+    }
+
+    public void preguntarApuestaJugadores(){
+        for (Jugador jugador : jugadores){
+            preguntarApuestaJugador(jugador);
+        }
+    }
+    
+    public void eliminarJugador(Jugador jugador){
+        this.jugadores.remove(jugador);
+    }
+
+    private void preguntarApuestaJugador(Jugador jugador){
+        boolean apuestaValida = false;
+        while(!apuestaValida){
+            try {
+                System.out.println("Jugador " + jugador.getNombre() + " ¿cuanto quieres apostar? (en numeros enteros)");
+                int respuesta = Integer.parseInt(new Scanner(System.in).nextLine());
+                if (respuesta > jugador.getDinero()) {
+                    System.out.println("No puedes apostar mas de lo que tienes");
+                } else{
+                    jugador.loseDinero(respuesta);
+                    jugador.setDineroApostado(respuesta);
+                    apuestaValida = true;
+                }
+            } catch (Exception as){
+                System.out.println("Esa no es una apuesta correcta, prueba otra vez");
+            }
+
+        }
     }
 
 
     public void verCartas(){
         crupier.mostrarCartas();
+        System.out.println(crupier.getPuntuacion());
         System.out.println();
-        if (crupier.getPuntuacion() > 21){
+        if (crupier.getPuntuacion() > 21){ // El crupier se pasa por tanto todos los jugadores que no hayan perdido antgeriormente ganan
+            System.out.println("El crupier se paso :)");
             for (Jugador jugador : jugadores){
                 System.out.println("Jugador: " + jugador);
-                if (jugador.isVivo()){
+                if (isBlackjackOnTable(jugador)){
+                    mostrarHayBlackjack();
                     mostrarGanaste();
+                    jugador.addDinero(jugador.getDineroApostado() * 3 / 2);
+                }
+                else if (jugador.isVivo()){
+                    mostrarGanaste();
+                    jugador.addDinero(jugador.getDineroApostado() * 2);
+
                 } else {
                     mostrarPerdiste();
+
                 }
                 System.out.println();
             }
-        } else {
+        } else { //En el otro caso vemos jugador por jugador si han superado al crupier
             for (Jugador jugador : jugadores){
                 System.out.println("Jugador: " + jugador);
-                if (jugador.getPuntuacion()>crupier.getPuntuacion()){
-                    mostrarPerdiste();
-                }
-                else {
-                    mostrarGanaste();
+                if (isBlackjackOnTable(jugador)) {
+                    calculateTableBlackjack(jugador);
+
+                } else {
+                    calculateTableNoBlackjack(jugador);
+
                 }
                 System.out.println();
             }
         }
-        /*
-        for (Jugador jugador : jugadores){
-            if (jugador.getPuntuacion() > crupier.getPuntuacion() && jugador.isVivo()){
-                System.out.println( + jugador.getNombre() + "\n");
-                mostrarGanaste();
-            } else if(jugador.getPuntuacion() < crupier.getPuntuacion()){
-                System.out.println("Jugador " + jugador.getNombre() + "\n");
-                mostrarPerdiste();
-            }
-        } */
     }
+
+    public boolean isBlackjackOnTable(Jugador jugador){
+        return jugador.gotBlackjack() || crupier.gotBlackjack();
+    }
+
+    public void calculateTableNoBlackjack(Jugador jugador){
+        if (jugador.getPuntuacion() < crupier.getPuntuacion() || !jugador.isVivo()){ // tenemos peor puntuacion
+            mostrarPerdiste();
+        }
+        else if (jugador.getPuntuacion() > crupier.getPuntuacion()){ // tenemos mejor puntuacion
+            mostrarGanaste();
+            jugador.addDinero(jugador.getDineroApostado() * 2);
+        } else { //tenemos la misma puntuacion
+            mostrarEmpataste();
+            jugador.addDinero(jugador.getDineroApostado());
+        }
+    }
+
+    private void calculateTableBlackjack(Jugador jugador) {
+        mostrarHayBlackjack();
+        if (crupier.gotBlackjack() && jugador.gotBlackjack() && jugador.isVivo()){ // ambos tienen blackjack
+            mostrarEmpataste();
+            jugador.addDinero(jugador.getDineroApostado());
+        } else if(crupier.gotBlackjack()){
+            mostrarPerdiste();
+
+        } else if(jugador.gotBlackjack() && jugador.isVivo()) {
+            mostrarGanaste();
+            jugador.addDinero(jugador.getDineroApostado() * 3 / 2);
+        }
+    }
+
+    private static void mostrarHayBlackjack() {
+        System.out.println("Hay BlackJack en la mesa");
+    }
+
+
     public void cojerCartasCrupier(){
         while (crupier.getPuntuacion() < 17){
             crupier.addCarta(this.cartas.primeraCarta());
@@ -119,8 +239,8 @@ public class Juego {
         }
     }
 
-    private Integer preguntarCantidadJugadores(){
-        Integer numJugadores = 5;
+    private int preguntarCantidadJugadores(){
+        int numJugadores = 5;
         while (numJugadores > 4) {
             try {
                 System.out.println("¿Cuantos vais a jugar?, maximo 4");
@@ -170,18 +290,28 @@ public class Juego {
         System.out.println("PERDISTE :(");
     }
 
+    public static void mostrarEmpataste(){
+        System.out.println("EMPATASTE :|");
+    }
+
     private static void mostrarGanaste() {
         System.out.println("¡GANASTE!");
+    }
+
+    public void apostarJugador(Jugador jugador, int apuesta){
+        jugador.setDineroApostado(apuesta);
     }
 
     public Cartas getCartas() {
         return cartas;
     }
 
-    public void mostrarCartasJugadores(){
+    public void mostrarCartasYDineroJugadores(){
         System.out.println();
         for (Jugador jugador : jugadores){
             jugador.mostrarCartas();
+            jugador.mostrarDinero();
+            System.out.println();
         }
     }
 

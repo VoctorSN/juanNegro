@@ -4,26 +4,33 @@ import edu.badpals.Cartas.Carta;
 
 import java.util.ArrayList;
 
-public class Jugador {
+public class Jugador implements Persona{
     private boolean vivo = true;
     private ArrayList<Carta> cartas = new ArrayList<>();
     private String nombre;
-    private int dinero = 700;
+    private float dinero = 700;
+    private float dineroApostado = 0;
 
     public Jugador(String nombre) {
         this.nombre = nombre;
         this.capitalizarNombre();
     }
 
+    @Override
+    public boolean gotBlackjack(){
+        return this.getCartas().size() >= 2 && (cartas.get(1).getPuntuacion() + cartas.get(0).getPuntuacion() == 21);
+    }
+
     public void mostrarPuntuacion(){
         System.out.println("Tu puntuacion es: " + getPuntuacion());
     }
 
+    @Override
     public ArrayList<Carta> getCartas() {
         return cartas;
     }
 
-    public void addDinero(int cantidad){
+    public void addDinero(float cantidad){
         this.dinero += cantidad;
     }
 
@@ -49,7 +56,11 @@ public class Jugador {
         System.out.println(out);
     }
 
-    public int playerNumAses(){
+    public void mostrarDinero(){
+        System.out.println("Tu dinero actual es: " + getDinero());
+    }
+
+    private int playerNumAses(){
         int numAs = 0;
         for (Carta carta : cartas){
             if (carta.hasAs()){
@@ -59,6 +70,7 @@ public class Jugador {
         return numAs;
     }
 
+    @Override
     public int getPuntuacion(){
         int puntuacion = 0;
         for (Carta carta : cartas){
@@ -72,12 +84,13 @@ public class Jugador {
         return puntuacion;
     }
 
+    @Override
     public void addCarta(Carta carta){
         getCartas().add(carta);
     }
 
-    public void setCartas(ArrayList<Carta> cartas) {
-        this.cartas = cartas;
+    public void eliminarCartas() {
+        this.cartas = new ArrayList<>();
     }
 
     public String getNombre() {
@@ -93,11 +106,11 @@ public class Jugador {
         return getNombre();
     }
 
-    public int getDinero() {
+    public float getDinero() {
         return dinero;
     }
 
-    public void setDinero(int dinero) {
+    public void setDinero(float dinero) {
         this.dinero = dinero;
     }
 
@@ -107,5 +120,13 @@ public class Jugador {
 
     public void setVivo(boolean vivo) {
         this.vivo = vivo;
+    }
+
+    public float getDineroApostado() {
+        return dineroApostado;
+    }
+
+    public void setDineroApostado(float dineroApostado) {
+        this.dineroApostado = dineroApostado;
     }
 }

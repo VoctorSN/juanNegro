@@ -4,10 +4,10 @@ import edu.badpals.Cartas.Carta;
 
 import java.util.ArrayList;
 
-public class Crupier {
+public class Crupier implements Persona{
     ArrayList<Carta> cartas = new ArrayList<>();
 
-    public int playerNumAses(){
+    private int playerNumAses(){
         int numAs = 0;
         for (Carta carta : cartas){
             if (carta.hasAs()){
@@ -17,6 +17,7 @@ public class Crupier {
         return numAs;
     }
 
+    @Override
     public int getPuntuacion(){
         int puntuacion = 0;
         for (Carta carta : cartas){
@@ -30,6 +31,11 @@ public class Crupier {
         return puntuacion;
     }
 
+    @Override
+    public boolean gotBlackjack(){
+        return this.getCartas().size() >= 2 && (cartas.get(1).getPuntuacion() + cartas.get(0).getPuntuacion() == 21);
+    }
+
     public void mostrarCartas(){
         String out = "\nLas cartas del crupier son: ";
         for (Carta carta : this.getCartas()){
@@ -37,6 +43,8 @@ public class Crupier {
         }
         System.out.println(out);
     }
+
+    @Override
     public ArrayList<Carta> getCartas() {
         return cartas;
     }
@@ -45,6 +53,7 @@ public class Crupier {
         this.cartas = cartas;
     }
 
+    @Override
     public void addCarta(Carta carta){
         getCartas().add(carta);
     }
